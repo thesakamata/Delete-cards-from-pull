@@ -4,6 +4,9 @@
 // @version      1.6
 // @description  Adds a delete button to rolled cards so you can remove them immediately from the pull screen.
 // @match        https://gacha.miz.to/*
+// @run-at       document-end
+// @downloadURL  https://raw.githubusercontent.com/thesakamata/Delete-cards-from-pull/main/Delete%20cards%20from%20pull.js
+// @updateURL    https://raw.githubusercontent.com/thesakamata/Delete-cards-from-pull/main/Delete%20cards%20from%20pull.js
 // @grant        none
 // ==/UserScript==
 
