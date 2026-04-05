@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         osu!gacha Delete cards from pull
 // @namespace    https://gacha.miz.to/
-// @version      1.6
+// @version      1.7
 // @description  Adds a delete button to rolled cards so you can remove them immediately from the pull screen.
 // @match        https://gacha.miz.to/*
 // @run-at       document-end
@@ -98,10 +98,9 @@
         cardRoot.remove();
     }
 
-    // 🔹 Tooltip creator
-    function createTooltip(text) {
+    function createSharedTooltip() {
         const tooltip = document.createElement('div');
-        tooltip.textContent = text;
+        tooltip.textContent = '⚠ Deletes favorited cards';
 
         Object.assign(tooltip.style, {
             position: 'fixed',
@@ -117,10 +116,29 @@
             opacity: '0',
             transition: 'opacity 0.15s ease',
             whiteSpace: 'nowrap',
+            left: '0px',
+            top: '0px',
         });
 
         document.body.appendChild(tooltip);
         return tooltip;
+    }
+
+    const sharedTooltip = createSharedTooltip();
+
+    function showTooltip(e) {
+        sharedTooltip.style.left = `${e.clientX + 12}px`;
+        sharedTooltip.style.top = `${e.clientY + 12}px`;
+        sharedTooltip.style.opacity = '1';
+    }
+
+    function moveTooltip(e) {
+        sharedTooltip.style.left = `${e.clientX + 12}px`;
+        sharedTooltip.style.top = `${e.clientY + 12}px`;
+    }
+
+    function hideTooltip() {
+        sharedTooltip.style.opacity = '0';
     }
 
     function makeDeleteButton() {
@@ -152,13 +170,11 @@
             userSelect: 'none',
         });
 
-        const tooltip = createTooltip('⚠ Deletes favorited cards');
-
-        btn.addEventListener('mouseenter', () => {
+        btn.addEventListener('mouseenter', (e) => {
             if (!btn.disabled) {
                 btn.style.background = '#ef4444';
                 btn.style.borderColor = '#ef4444';
-                tooltip.style.opacity = '1';
+                showTooltip(e);
             }
         });
 
@@ -166,13 +182,14 @@
             if (!btn.disabled) {
                 btn.style.background = 'rgba(17, 24, 39, 0.96)';
                 btn.style.borderColor = '#374151';
-                tooltip.style.opacity = '0';
             }
+            hideTooltip();
         });
 
         btn.addEventListener('mousemove', (e) => {
-            tooltip.style.left = `${e.clientX + 12}px`;
-            tooltip.style.top = `${e.clientY + 12}px`;
+            if (!btn.disabled) {
+                moveTooltip(e);
+            }
         });
 
         return btn;
@@ -201,6 +218,8 @@
             event.preventDefault();
             event.stopPropagation();
 
+            hideTooltip();
+
             if (CONFIG.showConfirm) {
                 const ok = confirm(`Delete ${username || 'this card'}${rarity ? ` (${rarity})` : ''}?`);
                 if (!ok) return;
@@ -209,6 +228,7 @@
             btn.disabled = true;
             btn.textContent = '…';
             btn.style.background = '#ef4444';
+            btn.style.borderColor = '#ef4444';
 
             try {
                 log('Deleting', playerId);
@@ -219,6 +239,8 @@
                 btn.disabled = false;
                 btn.textContent = '🗑';
                 btn.style.background = 'rgba(17, 24, 39, 0.96)';
+                btn.style.borderColor = '#374151';
+                hideTooltip();
                 alert('Delete failed.');
             }
         });
